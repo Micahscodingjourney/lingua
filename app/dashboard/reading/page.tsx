@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 type Token = {
@@ -24,31 +23,46 @@ const PASSAGE = {
   level: "N5",
   xpReward: 60,
   tokens: [
+    { text: "田中", reading: "たなか", translation: "Tanaka (a surname)", tappable: true },
+    { text: "さん" },
+    { text: "は" },
     { text: "毎朝", reading: "まいあさ", translation: "every morning", tappable: true },
     { text: "、" },
-    { text: "田中", reading: "たなか", translation: "Tanaka (a name)", tappable: true },
-    { text: "さん" },
-    { text: "は" },
+    { text: "近く", reading: "ちかく", translation: "nearby", tappable: true },
+    { text: "の" },
     { text: "公園", reading: "こうえん", translation: "park", tappable: true },
     { text: "を" },
-    { text: "散歩", reading: "さんぽ", translation: "a walk / stroll", tappable: true },
+    { text: "散歩", reading: "さんぽ", translation: "walk / stroll", tappable: true },
     { text: "します。\n\n" },
-    { text: "空気", reading: "くうき", translation: "air / atmosphere", tappable: true },
+    { text: "今日", reading: "きょう", translation: "today", tappable: true },
     { text: "は" },
+    { text: "天気", reading: "てんき", translation: "weather", tappable: true },
+    { text: "が" },
+    { text: "いい", reading: "いい", translation: "good / nice", tappable: true },
+    { text: "です。" },
+    { text: "空気", reading: "くうき", translation: "air", tappable: true },
+    { text: "も" },
     { text: "新鮮", reading: "しんせん", translation: "fresh", tappable: true },
     { text: "で、" },
-    { text: "鳥", reading: "とり", translation: "bird", tappable: true },
-    { text: "の" },
-    { text: "声", reading: "こえ", translation: "voice / sound", tappable: true },
+    { text: "気持ち", reading: "きもち", translation: "feeling / mood", tappable: true },
     { text: "が" },
-    { text: "聞こえます", reading: "きこえます", translation: "can be heard", tappable: true },
-    { text: "。\n\n" },
-    { text: "田中", reading: "たなか", translation: "Tanaka (a name)", tappable: true },
+    { text: "いい", reading: "いい", translation: "good / nice", tappable: true },
+    { text: "です。\n\n" },
+    { text: "木", reading: "き", translation: "tree", tappable: true },
+    { text: "の" },
+    { text: "上", reading: "うえ", translation: "above / top", tappable: true },
+    { text: "で" },
+    { text: "鳥", reading: "とり", translation: "bird", tappable: true },
+    { text: "が" },
+    { text: "鳴いて", reading: "ないて", translation: "crying / singing (of a bird)", tappable: true },
+    { text: "います。" },
+    { text: "田中", reading: "たなか", translation: "Tanaka (a surname)", tappable: true },
     { text: "さん" },
     { text: "は" },
-    { text: "散歩", reading: "さんぽ", translation: "a walk / stroll", tappable: true },
+    { text: "この" },
+    { text: "時間", reading: "じかん", translation: "time / this moment", tappable: true },
     { text: "が" },
-    { text: "大好き", reading: "だいすき", translation: "love / really like", tappable: true },
+    { text: "大好き", reading: "だいすき", translation: "loves / really likes", tappable: true },
     { text: "です。" },
   ] as Token[],
 };
@@ -56,27 +70,27 @@ const PASSAGE = {
 const QUESTIONS: Question[] = [
   {
     question: "What does Tanaka-san do every morning?",
-    options: ["Goes to work", "Takes a walk in the park", "Eats breakfast outside", "Reads the news"],
+    options: ["Goes to work by train", "Takes a walk in the nearby park", "Eats breakfast in a café", "Reads the news at home"],
     correct: 1,
   },
   {
-    question: "What can be heard in the park?",
-    options: ["Cars", "Children playing", "The sound of birds", "Rain"],
+    question: "How is the weather today?",
+    options: ["Cloudy and cold", "Rainy", "Nice, with fresh air", "Hot and humid"],
     correct: 2,
   },
   {
-    question: "How does Tanaka-san feel about walks?",
-    options: ["Finds them tiring", "Does them out of habit", "Really loves them", "Prefers running"],
-    correct: 2,
+    question: "What does Tanaka-san love about this time?",
+    options: ["The silence", "This moment in the morning", "The exercise", "Meeting neighbours"],
+    correct: 1,
   },
 ];
 
 type Screen = "reading" | "quiz" | "complete";
 
 export default function ReadingPage() {
-  const router = useRouter();
   const [screen, setScreen] = useState<Screen>("reading");
   const [selected, setSelected] = useState<Token | null>(null);
+  const [translationRevealed, setTranslationRevealed] = useState(false);
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [chosenOption, setChosenOption] = useState<number | null>(null);
@@ -259,7 +273,11 @@ export default function ReadingPage() {
             return (
               <button
                 key={i}
-                onClick={() => setSelected(selected?.text === token.text && selected?.reading === token.reading ? null : token)}
+                onClick={() => {
+                  const isSame = selected?.text === token.text && selected?.reading === token.reading;
+                  setSelected(isSame ? null : token);
+                  setTranslationRevealed(false);
+                }}
                 className={`inline rounded px-0.5 transition-colors ${
                   selected?.text === token.text && selected?.reading === token.reading
                     ? "bg-[#6C63FF]/20 text-[#6C63FF]"
@@ -275,19 +293,25 @@ export default function ReadingPage() {
 
       {/* Word tooltip */}
       {selected && (
-        <div
-          className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-sm bg-[#1A1A2E] rounded-2xl px-5 py-4 shadow-xl z-10"
-          onClick={() => setSelected(null)}
-        >
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-sm bg-[#1A1A2E] rounded-2xl px-5 py-4 shadow-xl z-10">
           <div className="flex items-start justify-between">
-            <div>
+            <div className="flex-1">
               <p className="text-white text-2xl font-medium">{selected.text}</p>
               {selected.reading && (
                 <p className="text-[#A78BFA] text-sm mt-0.5">{selected.reading}</p>
               )}
-              <p className="text-[#E0DEFF] text-sm mt-1">{selected.translation}</p>
+              {translationRevealed ? (
+                <p className="text-[#E0DEFF] text-sm mt-2">{selected.translation}</p>
+              ) : (
+                <button
+                  onClick={() => setTranslationRevealed(true)}
+                  className="mt-2 text-xs font-semibold text-[#6C63FF] bg-[#6C63FF]/20 rounded-full px-3 py-1 hover:bg-[#6C63FF]/30 transition-colors"
+                >
+                  Reveal translation
+                </button>
+              )}
             </div>
-            <button className="text-[#6B6B80] mt-1">
+            <button onClick={() => setSelected(null)} className="text-[#6B6B80] mt-1 ml-3">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
               </svg>
