@@ -52,37 +52,44 @@ function scoreAnswer(input: string): number {
 export default function ListeningPage() {
   const [screen, setScreen] = useState<Screen>("listen");
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [activeChar, setActiveChar] = useState(-1);
   const [selected, setSelected] = useState<Token | null>(null);
   const [translationRevealed, setTranslationRevealed] = useState(false);
   const [dictation, setDictation] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const accuracy = submitted ? scoreAnswer(dictation) : 0;
   const xpEarned = Math.round((accuracy / 100) * LESSON.xpReward);
 
-  function play() {
-    if (typeof window === "undefined") return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(FULL_TEXT);
-    utterance.lang = "ja-JP";
-    utterance.rate = speed;
-    utterance.onboundary = (e) => {
-      if (e.name === "word") setActiveChar(e.charIndex);
-    };
-    utterance.onend = () => {
-      setIsPlaying(false);
-      setActiveChar(-1);
-    };
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+  async function play() {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setIsLoading(true);
+    const res = await fetch("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: FULL_TEXT }),
+    });
+    if (!res.ok) { setIsLoading(false); return; }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.onended = () => { setIsPlaying(false); setActiveChar(-1); };
+    setIsLoading(false);
     setIsPlaying(true);
+    audio.play();
   }
 
   function stop() {
-    window.speechSynthesis.cancel();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
     setIsPlaying(false);
     setActiveChar(-1);
   }
@@ -185,7 +192,7 @@ export default function ListeningPage() {
             )}
           </div>
           <div className="text-left">
-            <p className="text-sm font-semibold text-[#1A1A2E]">{isPlaying ? "Playing…" : "Replay audio"}</p>
+            <p className="text-sm font-semibold text-[#1A1A2E]">{isLoading ? "Loading…" : isPlaying ? "Playing…" : "Replay audio"}</p>
             <p className="text-xs text-[#9B9BAD]">{LESSON.titleTranslation} · {LESSON.level}</p>
           </div>
         </button>
@@ -280,9 +287,14 @@ export default function ListeningPage() {
           {/* Play / Stop button */}
           <button
             onClick={isPlaying ? stop : play}
-            className="w-16 h-16 rounded-full bg-[#6C63FF] flex items-center justify-center hover:bg-[#5A52E0] transition-colors mb-4 shadow-lg"
+            disabled={isLoading}
+            className="w-16 h-16 rounded-full bg-[#6C63FF] flex items-center justify-center hover:bg-[#5A52E0] transition-colors mb-4 shadow-lg disabled:opacity-60"
           >
-            {isPlaying ? (
+            {isLoading ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="animate-spin">
+                <circle cx="12" cy="12" r="9" stroke="white" strokeWidth="2" strokeDasharray="28" strokeDashoffset="10"/>
+              </svg>
+            ) : isPlaying ? (
               <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
                 <rect x="6" y="5" width="4" height="14" rx="1"/>
                 <rect x="14" y="5" width="4" height="14" rx="1"/>
@@ -294,20 +306,9 @@ export default function ListeningPage() {
             )}
           </button>
 
-          {/* Speed toggle */}
-          <div className="flex gap-2">
-            {[0.5, 1].map((s) => (
-              <button
-                key={s}
-                onClick={() => { setSpeed(s); if (isPlaying) { stop(); setTimeout(play, 100); } }}
-                className={`text-xs font-semibold rounded-full px-3 py-1 transition-colors ${
-                  speed === s ? "bg-[#6C63FF] text-white" : "bg-white/10 text-[#C4BFFF]"
-                }`}
-              >
-                {s === 0.5 ? "0.5×" : "1×"}
-              </button>
-            ))}
-          </div>
+          <p className="text-xs text-[#A78BFA]">
+            {isLoading ? "Loading audio…" : isPlaying ? "Playing…" : "Tap to play"}
+          </p>
         </div>
 
         {/* Transcript */}
