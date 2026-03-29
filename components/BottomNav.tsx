@@ -32,12 +32,11 @@ const navItems = [
     ),
   },
   {
-    href: "/dashboard/profile",
-    label: "Profile",
+    href: "/dashboard/assess",
+    label: "Assess",
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke={active ? "#6C63FF" : "#9B9BAD"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke={active ? "#6C63FF" : "#9B9BAD"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 5.55228 9.44772 6 10 6H14C14.5523 6 15 5.55228 15 5M9 5C9 4.44772 9.44772 4 10 4H14C14.5523 4 15 4.44772 15 5M9 12H15M9 16H13" stroke={active ? "#6C63FF" : "#9B9BAD"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
