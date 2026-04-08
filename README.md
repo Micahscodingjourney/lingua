@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+
+<br />
+
+# lingua
+
+**Learn any language, naturally.**
+
+A mobile-first language learning app with AI-powered conversation practice, spaced repetition, and handwriting recognition — built with Next.js 14, Supabase, and Tailwind CSS.
+
+<br />
+
+[![Next.js](https://img.shields.io/badge/Next.js_16-black?style=flat-square&logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
+
+<br />
+
+</div>
+
+---
+
+## Features
+
+| Module | Description |
+|--------|-------------|
+| 📖 **Reading** | Interactive passages with tap-to-reveal word translations and comprehension quizzes |
+| 🎧 **Listening** | Audio playback with word-level highlighting and English dictation exercises |
+| 🎤 **Speaking** | Phrase practice with live microphone transcription and accuracy scoring |
+| 🗂 **Vocab** | SM-2 spaced repetition flashcards across JLPT levels N5–N1 |
+| ✍️ **Tracing** | Canvas-based kana and kanji handwriting practice with SM-2 scheduling |
+| 📝 **Assessment** | Custom kana quiz builder — select individual characters, rows, or full sets |
+
+---
+
+## Tech Stack
+
+- **Framework** — [Next.js 16](https://nextjs.org) (App Router, Server Actions)
+- **Auth & Database** — [Supabase](https://supabase.com) (email/password auth, SSR session management)
+- **Styling** — [Tailwind CSS v4](https://tailwindcss.com), DM Sans + DM Serif Display
+- **Language** — TypeScript throughout
+- **Spaced Repetition** — SM-2 algorithm with `localStorage` persistence
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone and install
+
+```bash
+git clone https://github.com/Micahscodingjourney/lingua.git
+cd lingua
+npm install
+```
+
+### 2. Set up Supabase
+
+Create a project at [supabase.com](https://supabase.com), then copy your credentials:
+
+```bash
+cp .env.local.example .env.local
+```
+
+Open `.env.local` and fill in:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 3. Run the dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```
+lingua/
+├── app/
+│   ├── auth/               # Server actions (login, signup, signout) + callback route
+│   ├── dashboard/
+│   │   ├── page.tsx        # Home — greeting, streak, XP, word of the day, modules
+│   │   ├── reading/        # Reading module
+│   │   ├── listening/      # Listening module
+│   │   ├── speaking/       # Speaking module
+│   │   ├── vocab/          # Vocabulary flashcards (N5–N1)
+│   │   ├── trace/          # Kana & kanji tracing
+│   │   └── assess/         # Kana assessment builder
+│   └── login/              # Login / signup page
+├── components/
+│   ├── BottomNav.tsx       # App-wide bottom navigation
+│   ├── WordOfDayCard.tsx   # Word of the day card
+│   └── ModuleCard.tsx      # Learning module card with XP bar
+├── lib/
+│   ├── supabase/           # Browser + server Supabase clients
+│   ├── sm2.ts              # SM-2 spaced repetition algorithm
+│   ├── vocab.ts            # JLPT N5–N1 vocabulary data
+│   ├── trace-data.ts       # Hiragana, katakana, kanji N5 character sets
+│   └── kana-data.ts        # Kana grouped by Main / Dakuten / Combination
+└── middleware.ts            # Route protection (redirects unauthenticated users)
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Spaced Repetition
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Lingua uses the **SM-2 algorithm** (the same one powering Anki) for both the vocab flashcards and kana tracing sessions.
 
-## Deploy on Vercel
+- **Again** — resets the card's interval to 1 day, re-queues it 4 positions ahead in the current session
+- **Got it / Nailed it** — interval grows: `1d → 6d → interval × ease factor (default 2.5)`
+- Card state is persisted per level/set in `localStorage`
+- Sessions only show cards that are actually due today
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Roadmap
+
+- [ ] AI conversation practice (Claude API)
+- [ ] Persistent XP + leaderboards (Supabase)
+- [ ] Stroke order animations for kanji
+- [ ] Multi-language support beyond Japanese
+- [ ] Vercel deployment
+
+---
+
+<div align="center">
+
+Built by [@Micahscodingjourney](https://github.com/Micahscodingjourney)
+
+</div>
